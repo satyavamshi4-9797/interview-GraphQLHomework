@@ -2,7 +2,9 @@
   "name": "interview_homework",
   "version": "1.0.0",
   "scripts": {
+    "build": "tsc",
     "dev": "ts-node src/server.ts",
+    "dev:watch": "nodemon --watch src --ext ts --exec ts-node src/server.ts",
     "lint": "eslint . --ext .ts",
     "test": "npx jest --config=./jest.config.ts --watchAll=false --ci --runInBand"
   },
@@ -30,6 +32,7 @@
     "@typescript-eslint/parser": "8.41.0",
     "eslint": "8.57.0",
     "jest": "^30.2.0",
+    "nodemon": "^3.1.14",
     "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"

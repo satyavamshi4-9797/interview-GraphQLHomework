@@ -20,6 +20,9 @@ const _getAddress = (username: string): Address | null => {
 };
 
 export const getAddress = (_: any, args: Args, context: any): Address => {
+  if (!context.client) {
+    throw new GraphQLError('Missing required header: client');
+  }
   context.logger.info('getAddress', 'Enter resolver');
   const address = _getAddress(args.username);
   if (address) {
@@ -31,6 +34,12 @@ export const getAddress = (_: any, args: Args, context: any): Address => {
 };
 
 export const saveAddress = (_: any, args: SaveAddressArgs, context: any): Address => {
+  if (!context.client) {
+    throw new GraphQLError('Missing required header: client');
+  }
+  if (context.client === 'strata') {
+    throw new GraphQLError('strata client is not allowed to perform mutations');
+  }
   context.logger.info('saveAddress', 'Enter resolver');
   const addresses = readAddresses();
   const newAddress: Address = {

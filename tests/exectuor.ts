@@ -10,4 +10,7 @@ const yoga = createYoga({ schema, plugins });
 
 export const executor = buildHTTPExecutor({
   fetch: yoga.fetch,
+  headers: {
+    client: 'testclient',
+  },
 });
