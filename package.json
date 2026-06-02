@@ -5,6 +5,7 @@
     "build": "tsc",
     "dev": "ts-node src/server.ts",
     "dev:watch": "nodemon --watch src --ext ts --exec ts-node src/server.ts",
+    "mesh:build": "mesh build",
     "lint": "eslint . --ext .ts",
     "test": "npx jest --config=./jest.config.ts --watchAll=false --ci --runInBand"
   },
