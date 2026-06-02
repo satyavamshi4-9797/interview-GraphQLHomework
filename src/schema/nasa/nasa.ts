@@ -1,19 +1,50 @@
 import { getBuiltMesh } from '../../../.mesh/index';
 
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+}
+
+const cache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+const getCacheKey = (startDate: string, endDate: string) => `${startDate}_${endDate}`;
+
+const getFromCache = (key: string): any | null => {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  const isExpired = Date.now() - entry.timestamp > CACHE_TTL_MS;
+  if (isExpired) {
+    cache.delete(key);
+    return null;
+  }
+  return entry.data;
+};
+
+const setInCache = (key: string, data: any): void => {
+  cache.set(key, { data, timestamp: Date.now() });
+};
+
 export const getNearEarthObjects = async (startDate: string, endDate: string) => {
+  const cacheKey = getCacheKey(startDate, endDate);
+
+  const cached = getFromCache(cacheKey);
+  if (cached) {
+    console.log(`Cache hit for ${cacheKey}`);
+    return cached;
+  }
+
+  console.log(`Cache miss for ${cacheKey} — fetching from NASA API`);
+
   const mesh = await getBuiltMesh();
-  
+
   const result = await mesh.execute(`
     query {
       nearEarthObjectFeed(start_date: "${startDate}", end_date: "${endDate}")
     }
   `, {});
 
-  console.log('NASA result:', JSON.stringify(result, null, 2));
-
   const raw = (result?.data as any)?.nearEarthObjectFeed;
-  console.log('raw:', JSON.stringify(raw, null, 2));
-  
   if (!raw) return null;
 
   const objects = Object.values(raw.near_earth_objects ?? {})
@@ -29,8 +60,11 @@ export const getNearEarthObjects = async (startDate: string, endDate: string) =>
       missDistanceKm: obj.close_approach_data?.[0]?.miss_distance?.kilometers,
     }));
 
-  return {
+  const response = {
     elementCount: raw.element_count,
     objects,
   };
+
+  setInCache(cacheKey, response);
+  return response;
 };
